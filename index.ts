@@ -3,7 +3,7 @@ import v1 from "./src/api/v1";
 import cors from "cors";
 
 const app: express.Express = express();
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
