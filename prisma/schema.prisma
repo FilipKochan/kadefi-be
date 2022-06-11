@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model kda_to_usd_rates {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  kda_to_usd Float
+  timestamp  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model platforms {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(255)
+  price_records price_records[]
+}
+
+model price_records {
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  price_in_kda Float
+  timestamp    DateTime  @default(now()) @db.Timestamp(0)
+  platform     Int
+  token        Int
+  platforms    platforms @relation(fields: [platform], references: [id], onUpdate: Restrict, map: "FK_platform")
+  tokens       tokens    @relation(fields: [token], references: [id], onUpdate: Restrict, map: "FK_token")
+
+  @@index([platform], map: "FK_platform")
+  @@index([token], map: "FK_token")
+}
+
+model tokens {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(255)
+  price_records price_records[]
+}
