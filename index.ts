@@ -1,11 +1,15 @@
 import express from "express";
 import v1 from "./src/api/v1";
+import cors from "cors";
 
 const app: express.Express = express();
 const port: number = 3000;
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
+
+app.use(cors());
+
 app.get("/", (_, res) => {
   res.send("BE for kadefi");
 });

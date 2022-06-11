@@ -6,7 +6,7 @@ GET http://localhost:3000/api/tokens HTTP/1.1
 
 ###
 
-GET http://localhost:3000/api/tokens/prices?past_days=98 HTTP/1.1
+GET http://localhost:3000/api/tokens/prices?past_days=5 HTTP/1.1
 
 ###
 
