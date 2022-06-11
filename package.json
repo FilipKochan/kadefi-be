@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --detectOpenHandles",
-    "start": "nodemon index.ts"
+    "start": "ts-node index.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +24,6 @@
     "@types/jest": "^28.1.1",
     "@types/supertest": "^2.0.12",
     "jest": "^28.1.1",
-    "nodemon": "^2.0.16",
     "supertest": "^6.2.3",
     "ts-jest": "^28.0.4",
     "ts-node": "^10.8.1",
