@@ -92,21 +92,21 @@ describe("tokens", () => {
 
   describe("POST tokens/prices", () => {
     it("should reject invalid token_id", async () => {
-      const res = await request(app).post("/api/tokens/prices", {
+      const res = await request(app).post("/api/tokens/prices").send({
         token_id: "abc",
       });
       expect(res.status).toBe(400);
     });
 
     it("should reject non-existent token_id", async () => {
-      const res = await request(app).post("/api/tokens/prices", {
+      const res = await request(app).post("/api/tokens/prices").send({
         token_id: 17,
       });
       expect(res.status).toBe(400);
     });
 
     it("should reject invalid platform_id", async () => {
-      const res = await request(app).post("/api/tokens/prices", {
+      const res = await request(app).post("/api/tokens/prices").send({
         token_id: 3,
         platform_id: "012",
         price: 10,
@@ -116,7 +116,7 @@ describe("tokens", () => {
     });
 
     it("should reject non-existent platform_id", async () => {
-      const res = await request(app).post("/api/tokens/prices", {
+      const res = await request(app).post("/api/tokens/prices").send({
         token_id: 3,
         platform_id: 5,
         price: 2,
@@ -126,7 +126,7 @@ describe("tokens", () => {
     });
 
     it("should reject invalid price", async () => {
-      const res = await request(app).post("/api/tokens/prices", {
+      const res = await request(app).post("/api/tokens/prices").send({
         token_id: 3,
         platform_id: 1,
         price: "abc",

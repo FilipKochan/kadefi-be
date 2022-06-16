@@ -21,3 +21,16 @@ content-type: application/json
   "token_id": 1,
   "price": 0.023350918656215986
 }
+
+###
+
+GET http://localhost:3000/api/kda-usd-rates?past_days=6
+
+###
+
+POST http://localhost:3000/api/kda-usd-rates
+Content-Type: application/json
+
+{
+  "price": 1.85
+}
