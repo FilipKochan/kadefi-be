@@ -163,7 +163,7 @@ router.post("/", async (req, res) => {
   ) {
     // prices are different or previous dont exist, should update
 
-    const resCreate = await prisma.price_records.create({
+    const resInsert = await prisma.price_records.create({
       data: {
         token: token_id,
         price_in_kda: price,
@@ -171,13 +171,11 @@ router.post("/", async (req, res) => {
       },
     });
 
-    console.log(resCreate);
-
-    res.status(200).send("updated successfully");
+    res.status(200).json(resInsert);
     return;
   }
   // else - dont update
-  res.status(200).send("prices are same (not updated)");
+  res.sendStatus(200);
 });
 
 export default router;

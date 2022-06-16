@@ -1,6 +1,9 @@
+import { PrismaClient } from "@prisma/client";
+
 describe("tokens", () => {
   const request = require("supertest");
   const { app, server } = require("../index");
+  let insertedId: number;
 
   describe("GET /tokens", () => {
     it("should return all tokens", async () => {
@@ -87,7 +90,85 @@ describe("tokens", () => {
     });
   });
 
-  afterAll(() => {
+  describe("POST tokens/prices", () => {
+    it("should reject invalid token_id", async () => {
+      const res = await request(app).post("/api/tokens/prices", {
+        token_id: "abc",
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it("should reject non-existent token_id", async () => {
+      const res = await request(app).post("/api/tokens/prices", {
+        token_id: 17,
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it("should reject invalid platform_id", async () => {
+      const res = await request(app).post("/api/tokens/prices", {
+        token_id: 3,
+        platform_id: "012",
+        price: 10,
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should reject non-existent platform_id", async () => {
+      const res = await request(app).post("/api/tokens/prices", {
+        token_id: 3,
+        platform_id: 5,
+        price: 2,
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should reject invalid price", async () => {
+      const res = await request(app).post("/api/tokens/prices", {
+        token_id: 3,
+        platform_id: 1,
+        price: "abc",
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("should update price", async () => {
+      const res = await request(app)
+        .post("/api/tokens/prices")
+        .send({ token_id: 4, platform_id: 1, price: 0.551 });
+
+      const resObj = JSON.parse(res.text);
+      if (typeof resObj.id === "number") {
+        insertedId = resObj.id;
+      } else {
+        insertedId = parseInt(resObj.id as string, 10);
+      }
+      expect(res.status).toBe(200);
+      expect(resObj).toHaveProperty("id");
+      expect(resObj).toHaveProperty("platform");
+      expect(resObj).toHaveProperty("price_in_kda");
+      expect(resObj).toHaveProperty("token");
+      expect(resObj).toHaveProperty("timestamp");
+    });
+
+    it("should not update price again", async () => {
+      const res = await request(app)
+        .post("/api/tokens/prices")
+        .send({ token_id: 4, platform_id: 1, price: 0.551 });
+
+      expect(res.status).toBe(200);
+    });
+  });
+
+  afterAll(async () => {
     server.close();
+    const prisma = new PrismaClient();
+    await prisma.price_records.delete({
+      where: { id: insertedId },
+    });
+    await prisma.$disconnect();
   });
 });
