@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { PrismaClient, price_records } from "@prisma/client";
+import { price_records } from "@prisma/client";
+import { prisma } from "./db";
 
 const router = Router();
 
@@ -9,10 +10,15 @@ interface TokenPricesOptions {
   pastDays?: number;
 }
 
+interface PostTokenPriceBody {
+  tokenId: number;
+  platformId: number;
+  price: number;
+}
+
 const getPrices = async (
   options: TokenPricesOptions
 ): Promise<price_records[]> => {
-  const prisma = new PrismaClient();
   const now = new Date();
   if (options.pastDays !== undefined) {
     now.setDate(now.getDate() - options.pastDays);
@@ -79,6 +85,99 @@ router.get("/", async (req, res) => {
   } catch (e) {
     res.status(500).send(e);
   }
+});
+
+router.post("/", async (req, res) => {
+  const { token_id, platform_id, price } = req.body;
+  if (token_id === undefined) {
+    res.status(400).send("token_id missing");
+    return;
+  }
+  if (platform_id === undefined) {
+    res.status(400).send("platform_id missing");
+    return;
+  }
+  if (price === undefined) {
+    res.status(400).send("price missing");
+    return;
+  }
+
+  if (typeof token_id !== "number") {
+    res.status(400).send("token_id must be a number");
+    return;
+  }
+
+  if (typeof platform_id !== "number") {
+    res.status(400).send("platform_id must be a number");
+    return;
+  }
+
+  if (typeof price !== "number") {
+    res.status(400).send("price must be a number");
+    return;
+  }
+
+  const exists_token =
+    (await prisma.tokens.count({
+      where: { id: { equals: token_id } },
+    })) === 1;
+
+  if (!exists_token) {
+    res.status(400).send("token does not exist");
+    return;
+  }
+
+  const exists_platform =
+    (await prisma.platforms.count({
+      where: { id: { equals: platform_id } },
+    })) > 0;
+
+  if (!exists_platform) {
+    res.status(400).send("platform does not exist");
+    return;
+  }
+
+  const latest = await prisma.price_records.findFirst({
+    where: {
+      AND: {
+        tokens: {
+          id: {
+            equals: token_id,
+          },
+        },
+        platforms: {
+          id: {
+            equals: platform_id,
+          },
+        },
+      },
+    },
+    orderBy: {
+      timestamp: "desc",
+    },
+  });
+
+  if (
+    latest === null ||
+    latest.price_in_kda.toFixed(15) !== price.toFixed(15)
+  ) {
+    // prices are different or previous dont exist, should update
+
+    const resCreate = await prisma.price_records.create({
+      data: {
+        token: token_id,
+        price_in_kda: price,
+        platform: platform_id,
+      },
+    });
+
+    console.log(resCreate);
+
+    res.status(200).send("updated successfully");
+    return;
+  }
+  // else - dont update
+  res.status(200).send("prices are same (not updated)");
 });
 
 export default router;

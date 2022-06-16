@@ -6,9 +6,18 @@ GET http://localhost:3000/api/tokens HTTP/1.1
 
 ###
 
-GET http://localhost:3000/api/tokens/prices?past_days=5 HTTP/1.1
+GET http://localhost:3000/api/tokens/prices?past_days=50 HTTP/1.1
 
 ###
 
 GET http://localhost:3000/api/platforms HTTP/1.1
 
+###
+POST http://localhost:3000/api/tokens/prices HTTP/1.1
+content-type: application/json
+
+{
+  "platform_id": 1,
+  "token_id": 1,
+  "price": 0.023350918656215986
+}

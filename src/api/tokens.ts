@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { PrismaClient } from "@prisma/client";
 import prices from "./prices";
+import { prisma } from "./db";
 
 const router = Router();
 
 router.get("/", async (req, res) => {
-  const prisma = new PrismaClient();
   const tokens = await prisma.tokens.findMany();
   res.json(tokens);
 });

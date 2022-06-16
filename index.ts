@@ -1,6 +1,7 @@
 import express from "express";
 import v1 from "./src/api/v1";
 import cors from "cors";
+import { json } from "body-parser";
 
 const app: express.Express = express();
 const port = process.env.PORT || 3000;
@@ -8,6 +9,7 @@ const port = process.env.PORT || 3000;
   return this.toString();
 };
 
+app.use(json());
 app.use(cors());
 
 app.get("/", (_, res) => {
