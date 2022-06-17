@@ -1,10 +1,26 @@
 import { PrismaClient } from "@prisma/client";
+import express from "express";
+import { Server } from "http";
+const request = require("supertest");
+let app: express.Express;
+let server: Server;
+let insertedId: number;
+
+beforeAll(() => {
+  app = require("../index").app;
+  server = require("../index").server;
+});
+
+afterAll(async () => {
+  server.close();
+  const prisma = new PrismaClient();
+  await prisma.price_records.delete({
+    where: { id: insertedId },
+  });
+  await prisma.$disconnect();
+});
 
 describe("tokens", () => {
-  const request = require("supertest");
-  const { app, server } = require("../index");
-  let insertedId: number;
-
   describe("GET /tokens", () => {
     it("should return all tokens", async () => {
       const res = await request(app).get("/api/tokens");
@@ -91,48 +107,60 @@ describe("tokens", () => {
   });
 
   describe("POST tokens/prices", () => {
-    it("should reject invalid token_id", async () => {
-      const res = await request(app).post("/api/tokens/prices").send({
-        token_id: "abc",
-      });
-      expect(res.status).toBe(400);
+    it("should reject invalid token_id", (done) => {
+      request(app)
+        .post("/api/tokens/prices")
+        .send({
+          token_id: "abc",
+        })
+        .expect(400)
+        .end(done);
     });
 
-    it("should reject non-existent token_id", async () => {
-      const res = await request(app).post("/api/tokens/prices").send({
-        token_id: 17,
-      });
-      expect(res.status).toBe(400);
+    it("should reject non-existent token_id", (done) => {
+      request(app)
+        .post("/api/tokens/prices")
+        .send({
+          token_id: 17,
+        })
+        .expect(400)
+        .end(done);
     });
 
-    it("should reject invalid platform_id", async () => {
-      const res = await request(app).post("/api/tokens/prices").send({
-        token_id: 3,
-        platform_id: "012",
-        price: 10,
-      });
-
-      expect(res.status).toBe(400);
+    it("should reject invalid platform_id", (done) => {
+      request(app)
+        .post("/api/tokens/prices")
+        .send({
+          token_id: 3,
+          platform_id: "012",
+          price: 10,
+        })
+        .expect(400)
+        .end(done);
     });
 
-    it("should reject non-existent platform_id", async () => {
-      const res = await request(app).post("/api/tokens/prices").send({
-        token_id: 3,
-        platform_id: 5,
-        price: 2,
-      });
-
-      expect(res.status).toBe(400);
+    it("should reject non-existent platform_id", (done) => {
+      request(app)
+        .post("/api/tokens/prices")
+        .send({
+          token_id: 3,
+          platform_id: 5,
+          price: 2,
+        })
+        .expect(400)
+        .end(done);
     });
 
-    it("should reject invalid price", async () => {
-      const res = await request(app).post("/api/tokens/prices").send({
-        token_id: 3,
-        platform_id: 1,
-        price: "abc",
-      });
-
-      expect(res.status).toBe(400);
+    it("should reject invalid price", (done) => {
+      request(app)
+        .post("/api/tokens/prices")
+        .send({
+          token_id: 3,
+          platform_id: 1,
+          price: "abc",
+        })
+        .expect(400)
+        .end(done);
     });
 
     it("should update price", async () => {
@@ -154,21 +182,12 @@ describe("tokens", () => {
       expect(resObj).toHaveProperty("timestamp");
     });
 
-    it("should not update price again", async () => {
-      const res = await request(app)
+    it("should not update price again", (done) => {
+      request(app)
         .post("/api/tokens/prices")
-        .send({ token_id: 4, platform_id: 1, price: 0.551 });
-
-      expect(res.status).toBe(200);
+        .send({ token_id: 4, platform_id: 1, price: 0.551 })
+        .expect(200)
+        .end(done);
     });
-  });
-
-  afterAll(async () => {
-    server.close();
-    const prisma = new PrismaClient();
-    await prisma.price_records.delete({
-      where: { id: insertedId },
-    });
-    await prisma.$disconnect();
   });
 });
