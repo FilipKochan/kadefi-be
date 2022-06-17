@@ -12,7 +12,7 @@ beforeAll(() => {
 });
 
 afterAll(async () => {
-  server.close();
+  await new Promise<void>((resolve) => server.close(() => resolve()));
   const prisma = new PrismaClient();
   await prisma.price_records.delete({
     where: { id: insertedId },
@@ -182,12 +182,13 @@ describe("tokens", () => {
       expect(resObj).toHaveProperty("timestamp");
     });
 
-    it("should not update price again", (done) => {
-      request(app)
+    it("should not update price again", () => {
+      // returning seems to solve the open handle problem
+      // OK IT DOESNT
+      return request(app)
         .post("/api/tokens/prices")
         .send({ token_id: 4, platform_id: 1, price: 0.551 })
-        .expect(200)
-        .end(done);
+        .expect(200);
     });
   });
 });
